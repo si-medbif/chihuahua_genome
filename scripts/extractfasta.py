@@ -1,8 +1,10 @@
 #! /usr/bin/env python
 
 """
-Extract full or partial sequences from a fasta file
-Target specifications can be a bed file or entered on the command line (single entry)
+Extract full or partial sequences from a fasta file.
+Input fasta file is read from stdin and must be piped in.
+Target specifications can be a bed file or entered on the command line (single entry).
+When whole sequence is wanted, use "0 0" to indicate start and stop coordinates.
 """
 
 import sys
@@ -40,6 +42,8 @@ sequence = ''
 header = ''
 head = ''
 trans = maketrans('ACGTacgt', 'TGCAtgca')
+# 'header' is the complete sequence name
+# 'head' is the first non-whitespace part of the sequence name
 for line in sys.stdin:
     if line.startswith('>'):
         if header != '':
@@ -49,6 +53,8 @@ for line in sys.stdin:
                 else:
                     useheader = head
                 for start, stop, name, strand in bed[useheader]:
+                    if start == 0 and stop == 0:
+                        stop = len(sequence)
                     if strand != '-':
                         sys.stdout.write('>{}\n{}\n'.format(name, sequence[start:stop]))
                     else:
@@ -67,6 +73,8 @@ else:
             else:
                 useheader = head
             for start, stop, name, strand in bed[useheader]:
+                if start == 0 and stop == 0:
+                    stop = len(sequence)
                 if strand != '-':
                     sys.stdout.write('>{}\n{}\n'.format(name, sequence[start:stop]))
                 else:
